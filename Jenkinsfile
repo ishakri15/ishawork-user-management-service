@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        PATH = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+        MVN_CMD = "mvn"
+    }
+
     tools {
         // Use the name of the Maven installation configured in Jenkins → Global Tool Configuration
         maven 'Maven3'
