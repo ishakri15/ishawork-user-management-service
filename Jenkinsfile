@@ -16,12 +16,24 @@ pipeline {
     stages {
         stage('Diagnostics') {
           steps {
-            sh '''
-              echo "PATH = ${PATH}"
-              echo "which mvn: $(which mvn)"
-              mvn -v
-            '''
-          }
+              sh '''
+                echo "===== Diagnostic Info ====="
+                echo "User: $(whoami)"
+                echo "Workspace: ${env.WORKSPACE}"
+                echo "Node: ${env.NODE_NAME}"
+                echo "PATH = ${PATH}"
+                echo "MAVEN_HOME = ${MAVEN_HOME}"
+                echo "JAVA_HOME = ${JAVA_HOME}"
+                echo "Which mvn: $(which mvn || echo "mvn not found")"
+                echo "Maven version:"
+                mvn -v || /opt/homebrew/bin/mvn -v || echo "mvn version failed"
+                echo "Listing mvn path details:"
+                ls -l /opt/homebrew/bin/mvn || echo "mvn file not found"
+                echo "Environment variables (shell):"
+                printenv
+                echo "============================"
+              '''
+            }
         }
         stage('Checkout') {
             steps {
