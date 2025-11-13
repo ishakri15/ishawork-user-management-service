@@ -9,6 +9,7 @@ public class IshaworkUserManagementCoreApplication {
 	public static void main(String[] args) {
 
 		System.out.println("Start Application");
+		System.out.println("To test automatic build trigger");
 		SpringApplication.run(IshaworkUserManagementCoreApplication.class, args);
 	}
 
