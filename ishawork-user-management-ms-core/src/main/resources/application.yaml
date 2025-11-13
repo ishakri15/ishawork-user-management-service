@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: Ishawork User Management Core Application
