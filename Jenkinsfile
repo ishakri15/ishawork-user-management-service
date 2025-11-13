@@ -13,12 +13,6 @@ pipeline {
         // jdk 'JDK17'
     }
 
-    environment {
-        // Optional environment variables
-        MVN_CMD = "mvn"
-        // If using Maven Wrapper: MVN_CMD = "./mvnw"
-    }
-
     stages {
         stage('Checkout') {
             steps {
