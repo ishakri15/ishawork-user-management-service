@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class IshaworkUserManagementCoreApplication {
 
 	public static void main(String[] args) {
+
+		System.out.println("Start Application");
 		SpringApplication.run(IshaworkUserManagementCoreApplication.class, args);
 	}
 
