@@ -14,6 +14,15 @@ pipeline {
     }
 
     stages {
+        stage('Diagnostics') {
+          steps {
+            sh '''
+              echo "PATH = ${PATH}"
+              echo "which mvn: $(which mvn)"
+              mvn -v
+            '''
+          }
+        }
         stage('Checkout') {
             steps {
                 script {
@@ -24,9 +33,8 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-            withMaven(maven: 'Maven3') {
-                      sh 'mvn clean compile test package'
-            }
+                    sh '/opt/homebrew/bin/mvn clean compile test package'
+                  }
         }
 
         stage('Publish Artifacts') {
