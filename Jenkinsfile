@@ -24,10 +24,8 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                script {
-                    // Clean, compile, test, and package the multi-module project
-                    sh "${MVN_CMD} clean compile test package"
-                }
+            withMaven(maven: 'Maven3') {
+                      sh 'mvn clean compile test package'
             }
         }
 
