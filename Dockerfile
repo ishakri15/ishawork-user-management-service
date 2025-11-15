@@ -30,7 +30,7 @@ RUN mvn clean package -DskipTests
 # Uses the smallest possible JRE image that supports Java 17 on ARM64.
 # 'eclipse-temurin:17-jre-alpine' is based on Alpine Linux and is extremely small.
 # ----------------------------------------------------------------------
-FROM eclipse-temurin:17-jre-alpine
+FROM **eclipse-temurin:17-jre**
 
 # Set the argument for the application JAR file name (change this to match your artifact)
 ARG JAR_FILE=target/*.jar
