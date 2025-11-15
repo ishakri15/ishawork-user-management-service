@@ -33,7 +33,7 @@ ARG JAR_FILE=user-management-rest/target/*.jar
 ENV APP_HOME=/usr/app
 
 # Create a non-root user for security best practices
-RUN addgroup --system appuser && adduser -S -G appuser appuser
+RUN groupadd -r appuser && useradd -r -g appuser appuser
 # Create application directory and set permissions
 RUN mkdir ${APP_HOME}
 USER appuser
