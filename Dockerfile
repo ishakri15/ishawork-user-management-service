@@ -12,7 +12,6 @@ WORKDIR /app
 # Copy the Maven project files (pom.xml) first to leverage Docker layer caching.
 # If only the source code changes, Maven dependencies won't need to be redownloaded.
 COPY pom.xml .
-COPY settings.xml .
 # Download project dependencies
 # A dummy execution helps populate the local repository cache.
 RUN mvn dependency:go-offline
