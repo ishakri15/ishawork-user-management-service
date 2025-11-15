@@ -29,7 +29,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre
 
 # The REST API module contains the final executable Spring Boot JAR.
-ARG JAR_FILE=user-management-rest/target/*.jar
+ARG JAR_FILE=ishawork-user-management-ms-core/target/*.jar
 ENV APP_HOME=/usr/app
 
 # Create a non-root user for security best practices
