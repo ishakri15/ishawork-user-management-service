@@ -1,122 +1,80 @@
+// Define variables used throughout the pipeline
+def dockerHubRepo = "your_dockerhub_username/springboot-app" // e.g., myuser/springboot-app
+def imageTag = "${env.BUILD_NUMBER}" // Use Jenkins build number for unique tag
+
 pipeline {
+    // Agent 'any' means the pipeline can run on any available Jenkins node
+    // For M2, ensure your Jenkins agent is running on the host machine.
     agent any
 
+    // Define environment variables used for Docker Hub login
     environment {
-        PATH    = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-        MVN_CMD = "/opt/homebrew/bin/mvn"
-        IMAGE   = "ishawork-user-management-service:${env.BUILD_NUMBER}"
-        CONTAINER_NAME = "ishawork-user-management-app-${env.BUILD_NUMBER}"
-    }
-
-    tools {
-        maven 'Maven3'
-        // jdk 'JDK17'   // uncomment if you configured JDK tool in Jenkins
+        // You MUST configure a Jenkins Secret Text credential with ID 'dockerhub-credentials'
+        // containing your Docker Hub password/token.
+        DOCKER_HUB_ID = 'dockerhub-credentials'
     }
 
     stages {
-        stage('Diagnostics') {
+        stage('Clean Workspace and Checkout') {
             steps {
-                script {
-                    echo "===== Diagnostic Info ====="
-                    echo "User         : ${sh(script:'whoami', returnStdout:true).trim()}"
-                    echo "Workspace    : ${env.WORKSPACE}"
-                    echo "Node         : ${env.NODE_NAME}"
-                    echo "PATH         : ${env.PATH}"
-                    echo "MAVEN_HOME   : ${env.MAVEN_HOME}"
-                    echo "JAVA_HOME    : ${env.JAVA_HOME}"
-                    echo "MVN_CMD      : ${env.MVN_CMD}"
-                    echo "IMAGE        : ${env.IMAGE}"
-                    echo "============================"
-                }
-                sh '''
-                    echo "Which mvn: $(which mvn || echo 'mvn not found')"
-                    ${MVN_CMD} -v || echo "Maven not found at expected path"
-                    ls -l ${MVN_CMD} || echo "Maven binary missing"
-                    printenv | sort
-                '''
+                echo 'Cleaning up and checking out code...'
+                // The SCM checkout is typically done automatically when the job starts
+                // If using Git, ensure the Jenkins job is configured with the repo URL.
             }
         }
 
-        stage('Checkout') {
+        stage('Build Spring Boot App') {
             steps {
+                echo 'Running Maven build...'
+                // IMPORTANT: Use the correct command for your multi-module project
+                // If using Gradle: sh './gradlew clean package -x test'
+                // If using Maven:
+                sh 'mvn clean package -DskipTests'
+
+                // Verify the JAR exists (adjust the path to your final JAR)
+                sh "ls -l your-main-module/target/*.jar"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image: ${dockerHubRepo}:${imageTag}"
+
+                // Use the docker build command
+                // The -f flag specifies the Dockerfile location (we assume root)
+                // The '.' indicates the build context (the root of the project)
                 script {
-                    echo "Checking out code from SCM..."
-                    checkout scm
-                    echo "Checkout complete."
+                    def customImage = docker.build("${dockerHubRepo}:${imageTag}", "-f Dockerfile .")
+
+                    // Store the image reference for the next stage
+                    // Note: Jenkins automatically uses the Docker daemon on the agent.
+                    // Since this is on an M2, it will natively build an ARM64 image.
+                    stash name: 'dockerImage', includes: 'target/*'
                 }
             }
         }
 
-        stage('Build & Test') {
+        stage('Push to Docker Hub') {
             steps {
-                script {
-                    echo "Building the project (multi-module) with Maven..."
-                }
-                sh '''
-                    echo "Running: ${MVN_CMD} clean install -DskipDocker"
-                    ${MVN_CMD} clean install -DskipDocker
-                '''
-            }
-        }
+                echo 'Authenticating and pushing image to Docker Hub...'
+                // Use the 'withCredentials' block to securely access Docker Hub credentials
+                withCredentials([usernamePassword(credentialsId: env.DOCKER_HUB_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        // 1. Authenticate with Docker Hub
+                        sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
 
-        stage('Docker Build') {
-            steps {
-                script {
-                    echo "Building Docker image ${IMAGE}"
-                }
-                sh '''
-                    docker build -t ${IMAGE} .
-                '''
-            }
-        }
+                        // 2. Tag the image as 'latest' as well
+                        sh "docker tag ${dockerHubRepo}:${imageTag} ${dockerHubRepo}:latest"
 
-        stage('Docker Run') {
-            steps {
-                script {
-                    echo "Stopping any running container named ${CONTAINER_NAME}"
-                }
-                sh '''
-                    docker rm -f ${CONTAINER_NAME} || true
-                    echo "Running container ${CONTAINER_NAME} from image ${IMAGE}"
-                    docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE}
-                '''
-            }
-        }
+                        // 3. Push both tags
+                        sh "docker push ${dockerHubRepo}:${imageTag}"
+                        sh "docker push ${dockerHubRepo}:latest"
 
-        stage('Docker Status') {
-            steps {
-                script {
-                    echo "Listing running containers"
-                }
-                sh '''
-                    docker ps
-                    docker logs ${CONTAINER_NAME}
-                '''
-            }
-        }
-
-        stage('Clean up') {
-            when {
-                branch 'main'
-            }
-            steps {
-                script {
-                    echo "Cleanup or deploy logic for main branch (optional)"
+                        // 4. Logout
+                        sh "docker logout"
+                    }
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
-        }
-        success {
-            echo '✅ Pipeline succeeded!'
-        }
-        failure {
-            echo '❌ Pipeline failed!'
         }
     }
 }
