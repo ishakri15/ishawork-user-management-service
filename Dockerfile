@@ -14,10 +14,9 @@ COPY pom.xml .
 # This caches dependencies, so subsequent builds are faster if only code changes.
 RUN mvn dependency:go-offline
 
-# Copy POMs: root + modules
-COPY pom.xml ./                      # parent POM
-COPY ishawork-user-management-rest-api/pom.xml ishawork-user-management-rest-api/pom.xml
-COPY ishawork-user-management-ms-core/pom.xml ishawork-user-management-ms-core/pom.xml
+COPY pom.xml .
+COPY ishawork-user-management-rest-api ./ishawork-user-management-rest-api
+COPY ishawork-user-management-ms-core ./ishawork-user-management-ms-core
 
 # Compile the entire multi-module project and package the executable JAR
 RUN mvn clean package -DskipTests
