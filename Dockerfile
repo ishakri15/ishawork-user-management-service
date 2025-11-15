@@ -16,8 +16,8 @@ RUN mvn dependency:go-offline
 
 # Copy the actual source code and module directories
 # Ensure these two directories exist in the same folder as the Dockerfile.
-COPY ishawork-user-management-ms-core ./ishawork-user-management-ms-core
-COPY ishawork-user-management-rest-api ./ishawork-user-management-rest-api
+COPY ishawork-user-management-service/ishawork-user-management-ms-core ./ishawork-user-management-service/ishawork-user-management-ms-core
+COPY ishawork-user-management-service/ishawork-user-management-rest-api ./ishawork-user-management-service/ishawork-user-management-rest-api
 
 # Compile the entire multi-module project and package the executable JAR
 RUN mvn clean package -DskipTests
