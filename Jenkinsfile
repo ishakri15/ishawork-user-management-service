@@ -1,5 +1,5 @@
 // Define variables used throughout the pipeline
-def dockerHubRepo = "your_dockerhub_username/springboot-app" // e.g., myuser/springboot-app
+def dockerHubRepo = "ishakri15/ishawork-user-management-service" // e.g., myuser/springboot-app
 def imageTag = "${env.BUILD_NUMBER}" // Use Jenkins build number for unique tag
 
 pipeline {
@@ -11,7 +11,7 @@ pipeline {
     environment {
         // You MUST configure a Jenkins Secret Text credential with ID 'dockerhub-credentials'
         // containing your Docker Hub password/token.
-        DOCKER_HUB_ID = 'dockerhub-credentials'
+        DOCKER_HUB_ID = 'Docker#7989'
     }
 
     stages {
@@ -32,7 +32,7 @@ pipeline {
                 sh 'mvn clean package -DskipTests'
 
                 // Verify the JAR exists (adjust the path to your final JAR)
-                sh "ls -l your-main-module/target/*.jar"
+                sh "ls -l ishawork-user-management-ms-core/target/*.jar"
             }
         }
 
