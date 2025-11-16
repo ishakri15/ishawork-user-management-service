@@ -5,7 +5,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = 'Docker#7989'
+        DOCKER_HUB_CREDENTIALS = 'docker-isha-cred'
 
         // IMAGE_TAG is set from the Jenkins build number at runtime
         IMAGE_TAG = "${env.BUILD_NUMBER}"
